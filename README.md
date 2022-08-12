@@ -10,3 +10,6 @@
 - ERD symbols and notations 
 - ERD cardinality 
 
+
+
+
