@@ -1,0 +1,37 @@
+--this is a single line comment
+
+
+
+/* this is
+multi lines
+comments
+*/
+
+
+
+/*
+Capabilities of SQL SELECT Statements
+Arithmetic expressions and NULL values in the SELECT statement
+Column Aliases
+Use of concatenation operator, literal character strings, alternative quote operator, and the DISTINCT keyword
+DESCRIBE command
+*/
+
+--1 to select all the columns/rows in a table use:
+
+SELECT * 
+FROM employees;
+
+SELECT * 
+FROM departments;
+
+
+
+
+--2 to select specific columns
+
+SELECT DEPARTMENT_ID, DEPARTMENT_NAME
+FROM   DEPARTMENTs;
+
+
+
