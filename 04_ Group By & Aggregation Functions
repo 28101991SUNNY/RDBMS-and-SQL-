@@ -1,1 +1,399 @@
 
+*******************************************
+Schema : Farmer's Market 
+*************************************************
+tables :
+----------------------------------------------
+Booth : 
+booth_number	int	NO	PRI		
+booth_price_level	varchar(45)	NO			
+booth_description	varchar(255)	NO			
+booth_type	varchar(45)	NO			
+---------------------------------
+Customer : 
+customer_id	int	NO	PRI		
+customer_first_name	varchar(45)	YES			
+customer_last_name	varchar(45)	YES			
+customer_zip	varchar(45)	YES			
+------------------------------------------
+customer_purchases :
+product_id	int	NO	PRI	
+vendor_id	int	NO	PRI	
+market_date	date	NO	PRI	
+customer_id	int	NO	PRI	
+quantity	decimal(16,2)	YES		
+cost_to_customer_per_qty	decimal(16,2)	YES		
+transaction_time	time	NO	PRI	
+-----------------------------------------
+market_date_info :
+market_date	date	NO	PRI		
+market_day	varchar(45)	YES			
+market_week	varchar(45)	YES			
+market_year	varchar(45)	YES			
+market_start_time	varchar(45)	YES			
+market_end_time	varchar(45)	YES			
+special_notes	blob	YES			
+market_season	varchar(45)	YES			
+market_min_temp	varchar(200)	YES			
+market_max_temp	varchar(45)	YES			
+market_rain_flag	int	YES			
+market_snow_flag	int	YES			
+---------------------------------------------
+product : 
+product_id	int	NO	PRI	
+product_name	varchar(45)	YES		
+product_size	varchar(45)	YES		
+product_category_id	int	NO	PRI	
+product_qty_type	varchar(45)	YES		
+--------------------------------------------------
+product_category :
+product_category_id	int	NO	PRI		auto_increment
+product_category_name	varchar(45)	YES			
+--------------------------------------------------
+vendor :
+vendor_id	int	NO	PRI		auto_increment
+vendor_name	varchar(45)	NO	UNI		
+vendor_type	varchar(45)	NO			
+vendor_owner_first_name	varchar(45)	NO			
+vendor_owner_last_name	varchar(45)	NO			
+--------------------------------------------------
+vendor_booth_assignments :
+vendor_id	int	NO	PRI	
+booth_number	int	NO	PRI	
+market_date	date	NO	PRI	
+--------------------------------------------------
+vendor_inventory : 
+market_date	date	NO	PRI		
+quantity	decimal(16,2)	YES			
+vendor_id	int	NO	PRI		
+product_id	int	NO	PRI		
+original_price	decimal(16,2)	YES			
+--------------------------------------------------
+
+-------------------------------------------------------
+*------------------------------------------------------*
+**********************************************************
+
+SELECT columns
+FROM table
+WHERE condition 
+GROUP BY columns by which you want to group
+HAVING filtering on group 
+ORDER BY column
+
+
+**************************************************************************************************************************
+
+Q : GET A LIST OF CUSTOMER_IDS WHO MADE PURCHASES ON EACH MARKET DATE : 
+
+
+ 
+ SELECT 
+    market_date,
+    customer_id
+ FROM 
+     customer_purchases 
+ GROUP BY 
+     market_date ,customer_id;
+
+
+-------
+
+SELECT 
+		distinct
+		market_date,
+		customer_id
+FROM 
+		customer_purchases 
+ ;
+ 
+
+
+**************************************************************************************************************************
+
+Q : COUNT  THE NUMBER OF CUSTOMERS WHO MADE PURCHASES ON EACH MARKET DATE : 
+
+
+
+SELECT 
+	market_date,
+	count(distinct(customer_id))
+FROM 
+	customer_purchases 
+GROUP BY 
+	market_date ;
+
+**************************************************************************************************************************
+
+Q : COUNT THE NUMBER OF PURCHASES EACH CUSTOMER MADE PER MARKET DATE : 
+ 
+ SELECT
+     market_date,
+     customer_id,
+     COUNT(1) AS "Number of product purchased"
+ FROM
+     customer_purchases
+ GROUP BY 
+     market_date,
+     customer_id;
+ 
+ ------------------
+ 
+ SELECT
+     market_date,
+     customer_id,
+     COUNT(1) AS "Number of product purchased"
+ FROM
+     customer_purchases
+ GROUP BY 
+     1,
+     2;
+
+ --------------
+ **************************************************************************************************************************
+ 
+Q : HOW MANY DIFFERENT KINDS OF PRODUCTS WERE PURCHASED BY EACH CUSTOMERS ON EACH MARKET DATE : 
+ 
+ SELECT
+     market_date,
+     customer_id,
+     COUNT(distinct(product_id)) AS "Number of distinct product purchased"
+ FROM
+     customer_purchases
+ GROUP BY 
+     1,
+     2;
+
+ 
+
+**************************************************************************************************************************
+
+COUNT(*)        COUNT(1)        COUNT(column_name)          COUNT(DISTINCT(column_name))
+
+counts          counts          counts all                  counts only distinct values      
+all             all value       values                      does not include duplicatd values 
+values          execpt          includes
+including       nulls           duplicates  
+nulls           includes
+includes        duplicate
+duplicated 
+
+**************************************************************************************************************************
+
+Q : CALCULATE TOTAL QUANTITY PURCHASE BY EACH CUSTOMERS PER MARKET DATE : 
+
+ SELECT
+     market_date,
+     customer_id,
+     SUM(quantity) AS "Total Quantity"
+ FROM
+     customer_purchases
+ GROUP BY 
+     market_date,
+     customer_id;
+     
+**************************************************************************************************************************
+
+
+Q : CALCULATE TOTAL AMOUNT SPENT BY EACH CUSTOMERS PER MARKET DATE :.
+
+     SELECT
+         market_date,
+         customer_id,
+         round(SUM(quantity*cost_to_customer_per_qty),2) AS "Total Amount"
+     FROM
+         customer_purchases
+     GROUP BY 
+         1,2;
+
+
+**************************************************************************************************************************
+
+Q : CALCULATE THE TOTAL REVENUE OF MARKET : 
+
+SELECT
+  round(SUM(quantity*cost_to_customer_per_qty),2) AS "Total Revenue"
+FROM
+  customer_purchases
+;
+
+
+**************************************************************************************************************************
+
+Q : CALCULATE THE TOTAL SALE OF MARKET PER MARKET DATE: : 
+
+SELECT
+  market_date,
+  round(SUM(quantity*cost_to_customer_per_qty),2) AS "Total Revenue"
+FROM
+  customer_purchases
+GROUP BY 
+  market_date
+ORDER BY 
+  1;
+
+
+**************************************************************************************************************************
+Q : CALCULATE TOTAL PRICE PAID BY CUSTOMER_ID 3 PER MARKET DATE : 
+
+
+SELECT 
+    market_date,
+    round(SUM(quantity*cost_to_customer_per_qty),2) as total_spent
+FROM
+    customer_purchases
+WHERE 
+    customer_id = 3
+GROUP BY 
+    market_date
+ORDER BY 
+    1;
+
+
+
+**************************************************************************************************************************
+Q : 
+WHAT IF WE WANTE TO FIND OUT HOW MUCH A CUSTOMER HAD SPENT AT EACH VENDOR  , REGARDLESS OF DATE .
+
+
+SELECT 
+    cp.customer_id,
+    cp.vendor_id,
+    round(SUM(cp.quantity * cp.cost_to_customer_per_qty),2) as total_spent
+FROM customer_purchases AS cp
+LEFT JOIN vendor as v
+	  on v.vendor_id = cp.vendor_id
+GROUP BY 
+    customer_id,
+    cp.vendor_id
+ORDER BY 
+1;
+
+
+
+
+
+Q  : ADD SOME CUSTOMER DETAILS AND VENDOR DETAILS TO THERE RESULTS. 
+
+
+SELECT 
+    cp.customer_id,
+    concat(c.customer_first_name," ",c.customer_last_name) as customer_name,
+    cp.vendor_id,
+    v.vendor_name,
+    round(SUM(cp.quantity * cp.cost_to_customer_per_qty),2) as total_spent
+FROM 
+    customer_purchases AS cp
+LEFT JOIN 
+    vendor as v
+	      on v.vendor_id = cp.vendor_id
+LEFT JOIN 
+    customer as c
+	      on c.customer_id = cp.customer_id
+GROUP BY 
+    customer_id,
+    cp.vendor_id
+ORDER BY 
+1;
+
+
+
+
+**************************************************************************************************************************
+
+
+Q : WE WANT TO GET MOST AND LEAST EXPENSIVE ITEMS PER PRODUCT CATEGORY, 
+CONSIDERING THE FACT THAT EACH VENDOR SETS THEIR OWN PRICE AND CAN ADJUST PRICES PER CUSTOMER.
+
+
+SELECT 
+
+    pc.product_category_name,
+    pc.product_category_id,
+    min(vi.original_price) as min_price,
+    max(vi.original_price) as max_price
+    
+FROM 
+    vendor_inventory AS vi
+    
+    LEFT JOIN product as p
+        on vi.product_id = p.product_id
+    LEFT JOIN product_category as pc
+        on p.product_category_id = pc.product_category_id
+
+group by
+    pc.product_category_id
+;
+
+
+
+
+
+
+**************************************************************************************************************************
+Q : 
+FIND THE AVERAGE AMOUNT SPENT BY CUSTOMERS ON EACH DAY . WE WANT TO CONSIDER ONLY THOSE DAYS WHERE 
+THE NUMBER OF PURCHASES WERE MORE THAN 3 AND THE TRANSCATION AMOUNT WAS GREATER THAN 5.
+
+
+
+SELECT
+    market_date,
+    customer_id,
+    count(1) as No_of_Transactions,
+    round(avg((quantity * cost_to_customer_per_qty)),2) as avgspent
+FROM
+    customer_purchases
+WHERE 
+    (quantity * cost_to_customer_per_qty) > 5 
+GROUP BY
+    market_date
+HAVING count(1) > 3
+ORDER BY 
+    market_date
+;
+
+
+**************************************************************************************************************************
+
+Q: FILTER OUT VENDORS WHO BROUGHT ATLEAST 10 ITMES TO FARMERS MARKET OVER THE PERIOD 2019-05-02 AND 2019-05-16
+
+select 
+    vendor_id,
+    count(distinct(product_id)) as No_of_items,
+    sum(quantity * original_price) as value_of_inventory,
+    sum(quantity) as inventory_item_count
+from 
+    vendor_inventory
+where 
+    market_date between "2019-05-02" and "2019-05-16" 
+group by 
+    vendor_id
+having 
+    inventory_item_count >=10
+;
+
+
+**************************************************************************************************************************
+
+
+Question: count how many products were on sale for each
+market_date, or how many different products each vendor
+offered.
+
+
+
+SELECT
+    market_date,
+    vendor_id,
+    COUNT(distinct(product_id)) as differentProducts
+from 
+    CUSTOMER_PURCHASES
+group by
+    market_date, vendor_id
+order by 
+    market_date;
+
+
+**************************************************************************************************************************
+
