@@ -1,0 +1,269 @@
+
+*******************************************
+Schema : Farmer's Market 
+*************************************************
+tables :
+----------------------------------------------
+Booth : 
+booth_number	int	NO	PRI		
+booth_price_level	varchar(45)	NO			
+booth_description	varchar(255)	NO			
+booth_type	varchar(45)	NO			
+---------------------------------
+Customer : 
+customer_id	int	NO	PRI		
+customer_first_name	varchar(45)	YES			
+customer_last_name	varchar(45)	YES			
+customer_zip	varchar(45)	YES			
+------------------------------------------
+customer_purchases :
+product_id	int	NO	PRI	
+vendor_id	int	NO	PRI	
+market_date	date	NO	PRI	
+customer_id	int	NO	PRI	
+quantity	decimal(16,2)	YES		
+cost_to_customer_per_qty	decimal(16,2)	YES		
+transaction_time	time	NO	PRI	
+-----------------------------------------
+market_date_info :
+market_date	date	NO	PRI		
+market_day	varchar(45)	YES			
+market_week	varchar(45)	YES			
+market_year	varchar(45)	YES			
+market_start_time	varchar(45)	YES			
+market_end_time	varchar(45)	YES			
+special_notes	blob	YES			
+market_season	varchar(45)	YES			
+market_min_temp	varchar(200)	YES			
+market_max_temp	varchar(45)	YES			
+market_rain_flag	int	YES			
+market_snow_flag	int	YES			
+---------------------------------------------
+product : 
+product_id	int	NO	PRI	
+product_name	varchar(45)	YES		
+product_size	varchar(45)	YES		
+product_category_id	int	NO	PRI	
+product_qty_type	varchar(45)	YES		
+--------------------------------------------------
+product_category :
+product_category_id	int	NO	PRI		auto_increment
+product_category_name	varchar(45)	YES			
+--------------------------------------------------
+vendor :
+vendor_id	int	NO	PRI		auto_increment
+vendor_name	varchar(45)	NO	UNI		
+vendor_type	varchar(45)	NO			
+vendor_owner_first_name	varchar(45)	NO			
+vendor_owner_last_name	varchar(45)	NO			
+--------------------------------------------------
+vendor_booth_assignments :
+vendor_id	int	NO	PRI	
+booth_number	int	NO	PRI	
+market_date	date	NO	PRI	
+--------------------------------------------------
+vendor_inventory : 
+market_date	date	NO	PRI		
+quantity	decimal(16,2)	YES			
+vendor_id	int	NO	PRI		
+product_id	int	NO	PRI		
+original_price	decimal(16,2)	YES			
+--------------------------------------------------
+
+-------------------------------------------------------
+*------------------------------------------------------*
+**********************************************************
+
+CASE WHEN THEN END statement : 
+
+
+
+SELECT
+  cols,
+  CASE WHEN colName condition THEN expression
+       ELSE condition 
+       END AS col_alias
+FROM
+  tablename
+  
+  
+  
+
+********************************************************************************************************************
+Q : GET THE REPORT OF ALL THE VENDORS WHO PRIMARILY SELL FRESH PRODUCE AND WHO DONT 
+    AND MAKR IT IN FRONT OF THEIR NAMES.
+    
+
+SELECT 
+    vendor_id,
+    vendor_name,
+    concat(vendor_owner_first_name," ",vendor_owner_last_name) AS vendor_full_name,
+    vendor_type,
+    CASE WHEN vendor_type LIKE "%fresh%"  THEN "Fresh"
+         ELSE "Other"
+         END AS "Fresh/Other"
+FROM
+	  vendor
+ ;
+
+********************************************************************************************************************
+ Q : IF MARKET_DAY IS SATURDAY OR SUNDAY , MARK IT AS WEEKEND OR WEEKDAY .
+ 
+ SELECT
+ market_date,
+ market_day,
+ CASE WHEN market_day in ("Saturday","Sunday") THEN "Weekend"
+	  ELSE "Weekday"
+      END AS WeekdayOrNOT
+FROM
+	market_date_info;
+ 
+********************************************************************************************************************
+Q : PUT THE TOTAL COST TO CUSTOMER PURCHASES INTO BINS OF 
+      UNDER $5      $5-$9.99      $10-$19.99      $20 AND ABOVE. 
+ 
+ 
+SELECT
+	  market_date,
+    customer_id,
+    round((quantity * cost_to_customer_per_qty),2) as TotalAmount,
+    CASE WHEN (quantity * cost_to_customer_per_qty) < 5 THEN "UNDER $5"
+		     WHEN (quantity * cost_to_customer_per_qty) < 10 THEN "$5-$9.99"
+         WHEN (quantity * cost_to_customer_per_qty) < 20 THEN "$10-$19.99"
+         ELSE "ABOVE $20" 
+         END AS price_bins
+FROM
+	customer_purchases;
+ 
+
+
+
+********************************************************************************************************************
+Q : LETS SAY WE WANTED TO LIST EACH PRODUCT NAME ALONG WITH ITS PRODUCT CATEGORY NAME : 
+
+SELECT * FROM PRODUCT;
+SELECT * FROM PRODUCT_CATEGORY;
+
+
+
+SELECT 
+		p.product_name,
+		pc.product_category_name,
+		pc.product_category_id
+FROM 
+		product AS p
+LEFT JOIN 
+		product_category AS pc
+	ON
+		p.product_category_id = pc.product_category_id
+;
+
+********************************************************************************************************************
+Q : GET DETAILS OF ALL VENDORS SELLING FRESH FRUITS AND VEGIES WITH PRODUCT NAMES AND QUANTITY IN THE INVENTORY. 
+
+SELECT 
+    v.vendor_id,
+    p.product_name,
+    pc.product_category_name,
+    vi.quantity
+FROM 
+    vendor  as v
+    left join vendor_inventory as vi 
+          ON vi.vendor_id = v.vendor_id
+    left join product as p 
+          ON p.product_id = vi.product_id
+    left join product_category as pc 
+          ON pc.product_category_id = p.product_category_id
+WHERE
+  	pc.product_category_name LIKE "%fresh%";
+    
+    
+     
+********************************************************************************************************************
+Q : GET ALL CUSTOMERS INFORMATION WHO HAVE NOT PURCHASED ANYTHING FROM THE MARKET : 
+
+
+SELECT 
+  c.*
+FROM  
+  customer as c
+LEFT JOIN 
+  customer_purchases as cp
+	  ON c.customer_id = cp.customer_id
+WHERE 
+  cp.customer_id IS NULL;
+  
+
+
+
+********************************************************************************************************************
+---------------
+Q : WRITE QUERY THAT RETURNS A LIST OF ALL CUSTOMERS WHO DID NOT MAKE PURCAHSES ON - APRIL 3rd 2019.
+-----------
+SELECT * 
+FROM 
+    customer
+WHERE
+    customer_id not in (
+                        SELECT 
+                            distinct
+                            c.customer_id
+                        FROM 
+                          customer AS c
+                        LEFT JOIN customer_purchases as cp
+                          ON c.customer_id = cp.customer_id
+                        WHERE 
+                          cp.market_date = "2019-04-03" 
+                        order by cp.market_date
+                         )
+ ;
+ 
+ --------------------
+
+
+select
+c.*
+from customer as c
+where c.customer_id not in
+		(
+        select 
+        distinct(cp.customer_id)
+        from 
+        customer_purchases as cp
+        where cp.market_date = "2019-04-03" 
+        );
+ 
+
+********************************************************************************************************************
+
+Q : WE WANT DETAILS ABOUT ALL THE BOOTHS AS WELL AS EVERY VENDOR BOOTH ASSIGNMENTS ALONG WTH VENDOR DETAILS.  
+
+ SELECT 
+     distinct
+     b.booth_number,
+     b.booth_type,
+     v.vendor_name,
+     v.vendor_type
+ from
+     booth as b
+     left join vendor_booth_assignments as vba
+	        on vba.booth_number = b.booth_number
+     left join vendor as v
+	        on v.vendor_id = vba.vendor_id
+          
+          ;
+
+
+********************************************************************************************************************
+
+
+********************************************************************************************************************
+********************************************************************************************************************
+********************************************************************************************************************
+********************************************************************************************************************
+********************************************************************************************************************
+********************************************************************************************************************
+
+
+
+
