@@ -1,0 +1,74 @@
+*******************************************
+Schema : Farmer's Market 
+*************************************************
+tables :
+----------------------------------------------
+Booth : 
+booth_number	int	NO	PRI		
+booth_price_level	varchar(45)	NO			
+booth_description	varchar(255)	NO			
+booth_type	varchar(45)	NO			
+---------------------------------
+Customer : 
+customer_id	int	NO	PRI		
+customer_first_name	varchar(45)	YES			
+customer_last_name	varchar(45)	YES			
+customer_zip	varchar(45)	YES			
+------------------------------------------
+customer_purchases :
+product_id	int	NO	PRI	
+vendor_id	int	NO	PRI	
+market_date	date	NO	PRI	
+customer_id	int	NO	PRI	
+quantity	decimal(16,2)	YES		
+cost_to_customer_per_qty	decimal(16,2)	YES		
+transaction_time	time	NO	PRI	
+-----------------------------------------
+market_date_info :
+market_date	date	NO	PRI		
+market_day	varchar(45)	YES			
+market_week	varchar(45)	YES			
+market_year	varchar(45)	YES			
+market_start_time	varchar(45)	YES			
+market_end_time	varchar(45)	YES			
+special_notes	blob	YES			
+market_season	varchar(45)	YES			
+market_min_temp	varchar(200)	YES			
+market_max_temp	varchar(45)	YES			
+market_rain_flag	int	YES			
+market_snow_flag	int	YES			
+---------------------------------------------
+product : 
+product_id	int	NO	PRI	
+product_name	varchar(45)	YES		
+product_size	varchar(45)	YES		
+product_category_id	int	NO	PRI	
+product_qty_type	varchar(45)	YES		
+--------------------------------------------------
+product_category :
+product_category_id	int	NO	PRI		auto_increment
+product_category_name	varchar(45)	YES			
+--------------------------------------------------
+vendor :
+vendor_id	int	NO	PRI		auto_increment
+vendor_name	varchar(45)	NO	UNI		
+vendor_type	varchar(45)	NO			
+vendor_owner_first_name	varchar(45)	NO			
+vendor_owner_last_name	varchar(45)	NO			
+--------------------------------------------------
+vendor_booth_assignments :
+vendor_id	int	NO	PRI	
+booth_number	int	NO	PRI	
+market_date	date	NO	PRI	
+--------------------------------------------------
+vendor_inventory : 
+market_date	date	NO	PRI		
+quantity	decimal(16,2)	YES			
+vendor_id	int	NO	PRI		
+product_id	int	NO	PRI		
+original_price	decimal(16,2)	YES			
+--------------------------------------------------
+
+-------------------------------------------------------
+*------------------------------------------------------*
+**********************************************************
