@@ -9,6 +9,7 @@
 - Relational Database 
 - ERD symbols and notations 
 - ERD cardinality 
+- BigQuery 
 
 
 
